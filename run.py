@@ -5,7 +5,7 @@ subprocess.call('g++ --std=c++0x -W -Wall -Wno-sign-compare -O2 -s -pipe -mmmx -
 subprocess.call('javac -d out src/SameColorPairsVis.java', shell=True)
 
 def solve(seed):
-    return float(subprocess.check_output('java -cp out SameColorPairsVis -exec out/main.out -seed {}'.format(seed), shell=True))
+    return 1.0 - float(subprocess.check_output('java -cp out SameColorPairsVis -exec out/main.out -seed {}'.format(seed), shell=True))
 
 testcase = 100
 rate = 0
