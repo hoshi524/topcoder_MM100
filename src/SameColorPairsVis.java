@@ -20,8 +20,8 @@ class Pair {
 }
 
 public class SameColorPairsVis {
-    static int minS = 10, maxS = 100;
-    static int minC = 2, maxC = 6;
+    static int minS = 100, maxS = 100;
+    static int minC = 6, maxC = 6;
 
     int H, W;
 
@@ -518,7 +518,7 @@ public class SameColorPairsVis {
                     e.printStackTrace();
                 }
             }
-            System.out.println("Score = " + runTest(seed));
+            System.out.println(runTest(seed));
             if (proc != null)
                 try {
                     proc.destroy();
@@ -533,7 +533,7 @@ public class SameColorPairsVis {
     // -----------------------------------------
     public static void main(String[] args) {
         String seed = "1";
-        vis = true;
+        vis = false;
         manual = false;
         del = 100;
         SZ = 20;
