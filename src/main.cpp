@@ -23,14 +23,18 @@ class SameColorPairs {
       for (int i = 0; i < H; ++i) {
         for (int j = 0; j < W; ++j) {
           if (X[i][j] == 0) continue;
-          for (int a = i; a < H; ++a) {
-            for (int b = j; b < W; ++b) {
+          for (int a = 0; a < H; ++a) {
+            for (int b = 0; b < W; ++b) {
               if (X[a][b] == 0) continue;
               if (i == a && j == b) continue;
               if (X[i][j] != X[a][b]) continue;
               auto check = [&]() {
-                for (int h = i; h <= a; ++h) {
-                  for (int w = j; w <= b; ++w) {
+                int minh = min(i, a);
+                int maxh = max(i, a);
+                int minw = min(j, b);
+                int maxw = max(j, b);
+                for (int h = minh; h <= maxh; ++h) {
+                  for (int w = minw; w <= maxw; ++w) {
                     if (X[h][w] != X[i][j] && X[h][w] != 0) return false;
                   }
                 }
