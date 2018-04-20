@@ -18,31 +18,47 @@ int R1, R2;
 int RESULT1[S * S / 2][2];
 int RESULT2[S * S / 2][2];
 
-void shuffle(int* x) {
-  static int tmp[S * S];
-  for (int p = 0; p < P; ++p) {
-    int i = get_random() % (P - p);
-    tmp[p] = x[i];
-    x[i] = x[P - p - 1];
-  }
-  memcpy(x, tmp, sizeof(tmp));
-}
-
 class SameColorPairs {
  public:
   vector<string> removePairs(vector<string> board) {
     H = board.size();
     W = board[0].size();
-    P = 0;
-    for (int i = 0; i < H; ++i) {
-      for (int j = 0; j < W; ++j) {
-        P1[P] = (i << 8) | j;
-        P2[P] = (i << 8) | j;
-        ++P;
-      }
-    }
     R2 = 0;
-    for (int test = 0; test < 10; ++test) {
+    for (int test = 0; test < 6; ++test) {
+      {
+        P = 0;
+        for (int i = 0; i < H; ++i) {
+          for (int j = 0; j < W; ++j) {
+            P1[P] = (i << 8) | j;
+            P2[P] = (i << 8) | j;
+            ++P;
+          }
+        }
+        auto compare = [&](int a, int b) {
+          auto value = [](int x) {
+            int i = x >> 8;
+            int j = x & 0xff;
+            return abs(H / 2 - i) + abs(W / 2 - j);
+          };
+          int va = value(a);
+          int vb = value(b);
+          return test & 1 ? va > vb : va < vb;
+        };
+        sort(P1, P1 + P, compare);
+        sort(P2, P2 + P, compare);
+        for (int i = 0; i < P; ++i) {
+          auto swap = [&](int* x) {
+            int j = i + get_random() % 10;
+            if (j < P) {
+              int t = x[i];
+              x[i] = x[j];
+              x[j] = t;
+            }
+          };
+          swap(P1);
+          swap(P2);
+        }
+      }
       R1 = 0;
       C = 0;
       memset(sum, 0, sizeof(sum));
@@ -116,8 +132,6 @@ class SameColorPairs {
         R2 = R1;
         memcpy(RESULT2, RESULT1, sizeof(RESULT1));
       }
-      shuffle(P1);
-      shuffle(P2);
     }
     vector<string> ret;
     for (int i = 0; i < R2; ++i) {
