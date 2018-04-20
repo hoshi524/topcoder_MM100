@@ -67,7 +67,7 @@ int_fast16_t X[S][S];
 int_fast16_t SUM[MAX_C][S][S];
 int_fast16_t CP[MAX_C][S * S];
 int_fast16_t P1[S * S];
-int H, W, C, P;
+int H, W, C, P, B;
 int R1, R2;
 int_fast16_t RESULT1[S * S / 2][2];
 int_fast16_t RESULT2[S * S / 2][2];
@@ -77,6 +77,7 @@ class SameColorPairs {
   vector<string> removePairs(vector<string> board) {
     H = board.size();
     W = board[0].size();
+    B = H * W / 2;
     C = 0;
     for (int i = 0; i < H; ++i) {
       for (int j = 0; j < W; ++j) {
@@ -196,6 +197,7 @@ class SameColorPairs {
       if (R2 < R1) {
         R2 = R1;
         memcpy(RESULT2, RESULT1, sizeof(RESULT1));
+        if (R2 == B) break;
       }
     }
     vector<string> ret;
