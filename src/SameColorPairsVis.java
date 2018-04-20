@@ -21,7 +21,7 @@ class Pair {
 
 public class SameColorPairsVis {
     static int minS = 10, maxS = 100;
-    static int minC = 2, maxC = 6;
+    static int minC = 5, maxC = 6;
 
     int H, W;
 

@@ -2,13 +2,67 @@
 #include <sys/time.h>
 using namespace std;
 
+class Timer {
+ public:
+  void restart();
+  double getElapsed();
+
+  Timer();
+
+ private:
+  static double rdtsc_per_sec_inv;
+
+  double getTimeOfDay();
+  unsigned long long int getCycle();
+
+  double start_time;
+  unsigned long long int start_clock;
+};
+double Timer::rdtsc_per_sec_inv = -1;
+
+inline double Timer::getElapsed() {
+  if (rdtsc_per_sec_inv != -1)
+    return (double)(getCycle() - start_clock) * rdtsc_per_sec_inv;
+
+  const double RDTSC_MEASUREMENT_INTERVAL = 0.1;
+  double res = getTimeOfDay() - start_time;
+  if (res <= RDTSC_MEASUREMENT_INTERVAL) return res;
+
+  rdtsc_per_sec_inv = 1.0 / (getCycle() - start_clock);
+  rdtsc_per_sec_inv *= getTimeOfDay() - start_time;
+  return getElapsed();
+}
+
+inline void Timer::restart() {
+  start_time = getTimeOfDay();
+  start_clock = getCycle();
+}
+
+Timer::Timer() { restart(); }
+
+inline double Timer::getTimeOfDay() {
+  timeval tv;
+  gettimeofday(&tv, 0);
+  return tv.tv_sec + tv.tv_usec * 0.000001;
+}
+
+inline unsigned long long int Timer::getCycle() {
+  unsigned int low, high;
+  __asm__ volatile("rdtsc" : "=a"(low), "=d"(high));
+  return ((unsigned long long int)low) | ((unsigned long long int)high << 32);
+}
+
+Timer timer;
+
 inline unsigned get_random() {
   static unsigned y = 2463534242;
   return y ^= (y ^= (y ^= y << 13) >> 17) << 5;
 }
 
-const int MAX_C = 6;
-const int S = 1 << 7;
+constexpr float TIME_LIMIT = 2.5;
+constexpr int MAX_C = 6;
+constexpr int S = 1 << 7;
+
 int_fast16_t X[S][S];
 int_fast16_t SUM[MAX_C][S][S];
 int_fast16_t CP[MAX_C][S * S];
@@ -31,7 +85,7 @@ class SameColorPairs {
       }
     }
     R2 = 0;
-    for (int test = 0; test < 8; ++test) {
+    for (int test = 0; timer.getElapsed() < TIME_LIMIT; ++test) {
       {
         P = 0;
         for (int i = 0; i < H; ++i) {
