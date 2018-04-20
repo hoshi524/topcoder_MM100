@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 #include <sys/time.h>
 using namespace std;
+typedef long long ll;
 
 class Timer {
  public:
@@ -64,9 +65,9 @@ constexpr int MAX_C = 6;
 constexpr int S = 1 << 7;
 
 int_fast16_t X[S][S];
-int_fast16_t SUM[MAX_C][S][S];
 int_fast16_t CP[MAX_C][S * S];
 int_fast16_t P1[S * S];
+ll SUM[S][S];
 int H, W, C, P, B;
 int R1, R2;
 int_fast16_t RESULT1[S * S / 2][2];
@@ -85,6 +86,7 @@ class SameColorPairs {
         if (C < c) C = c;
       }
     }
+    int bit = 60 / C;
     R2 = 0;
     for (int test = 0; timer.getElapsed() < TIME_LIMIT; ++test) {
       {
@@ -124,16 +126,13 @@ class SameColorPairs {
         for (int j = 0; j < W; ++j) {
           int c = board[i][j] - '0';
           X[i][j] = c;
-          SUM[c][i + 1][j + 1] = 1;
+          SUM[i + 1][j + 1] = 1LL << (bit * c);
           CP[c][CP[c][0]++] = (i << 8) | j;
         }
       }
       for (int i = 0; i < H; ++i) {
         for (int j = 0; j < W; ++j) {
-          for (int c = 0; c < C; ++c) {
-            SUM[c][i + 1][j + 1] +=
-                SUM[c][i][j + 1] + SUM[c][i + 1][j] - SUM[c][i][j];
-          }
+          SUM[i + 1][j + 1] += SUM[i][j + 1] + SUM[i + 1][j] - SUM[i][j];
         }
       }
       bool ok = true;
@@ -151,20 +150,21 @@ class SameColorPairs {
               if (p1 == p2) continue;
               int a = p2 >> 8;
               int b = p2 & 0xff;
-              auto check = [&]() {
-                int minh = min(i, a);
-                int maxh = max(i, a) + 1;
-                int minw = min(j, b);
-                int maxw = max(j, b) + 1;
-                for (int c = 0; c < C; ++c) {
-                  if (X[i][j] == c) continue;
-                  if ((SUM[c][maxh][maxw] + SUM[c][minh][minw] -
-                       SUM[c][maxh][minw] - SUM[c][minh][maxw]) > 0)
-                    return false;
-                }
-                return true;
-              };
-              if (check()) {
+              int minh, maxh, minw, maxw;
+              if (i < a) {
+                minh = i, maxh = a + 1;
+              } else {
+                minh = a, maxh = i + 1;
+              }
+              if (j < b) {
+                minw = j, maxw = b + 1;
+              } else {
+                minw = b, maxw = j + 1;
+              }
+              ll t = SUM[maxh][maxw] + SUM[minh][minw] - SUM[maxh][minw] -
+                     SUM[minh][maxw];
+              ll m = ~(((1LL << bit) - 1LL) << (bit * c));
+              if ((t & m) == 0) {
                 auto remove = [&](int p) {
                   for (int k = 1; k < CP[c][0]; ++k) {
                     if (CP[c][k] == p) {
@@ -175,9 +175,10 @@ class SameColorPairs {
                   int i_ = p >> 8;
                   int j_ = p & 0xff;
                   X[i_][j_] = -1;
+                  ll t = 1LL << (bit * c);
                   for (int h = i_ + 1; h <= H; ++h) {
                     for (int w = j_ + 1; w <= W; ++w) {
-                      SUM[c][h][w]--;
+                      SUM[h][w] -= t;
                     }
                   }
                 };
