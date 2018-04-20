@@ -9,32 +9,38 @@ inline unsigned get_random() {
 
 const int MAX_C = 6;
 const int S = 1 << 7;
-int X[S][S];
-int sum[MAX_C][S][S];
-int P1[S * S];
-int P2[S * S];
+int_fast16_t X[S][S];
+int_fast16_t SUM[MAX_C][S][S];
+int_fast16_t CP[MAX_C][S * S];
+int_fast16_t P1[S * S];
 int H, W, C, P;
 int R1, R2;
-int RESULT1[S * S / 2][2];
-int RESULT2[S * S / 2][2];
+int_fast16_t RESULT1[S * S / 2][2];
+int_fast16_t RESULT2[S * S / 2][2];
 
 class SameColorPairs {
  public:
   vector<string> removePairs(vector<string> board) {
     H = board.size();
     W = board[0].size();
+    C = 0;
+    for (int i = 0; i < H; ++i) {
+      for (int j = 0; j < W; ++j) {
+        int c = board[i][j] - '0' + 1;
+        if (C < c) C = c;
+      }
+    }
     R2 = 0;
-    for (int test = 0; test < 6; ++test) {
+    for (int test = 0; test < 8; ++test) {
       {
         P = 0;
         for (int i = 0; i < H; ++i) {
           for (int j = 0; j < W; ++j) {
             P1[P] = (i << 8) | j;
-            P2[P] = (i << 8) | j;
             ++P;
           }
         }
-        auto compare = [&](int a, int b) {
+        sort(P1, P1 + P, [&](int a, int b) {
           auto value = [](int x) {
             int i = x >> 8;
             int j = x & 0xff;
@@ -43,11 +49,9 @@ class SameColorPairs {
           int va = value(a);
           int vb = value(b);
           return test & 1 ? va > vb : va < vb;
-        };
-        sort(P1, P1 + P, compare);
-        sort(P2, P2 + P, compare);
+        });
         for (int i = 0; i < P; ++i) {
-          auto swap = [&](int* x) {
+          auto swap = [&](int_fast16_t* x) {
             int j = i + get_random() % 10;
             if (j < P) {
               int t = x[i];
@@ -56,42 +60,42 @@ class SameColorPairs {
             }
           };
           swap(P1);
-          swap(P2);
         }
       }
       R1 = 0;
-      C = 0;
-      memset(sum, 0, sizeof(sum));
+      memset(SUM, 0, sizeof(SUM));
+      for (int i = 0; i < C; ++i) CP[i][0] = 1;
       for (int i = 0; i < H; ++i) {
         for (int j = 0; j < W; ++j) {
           int c = board[i][j] - '0';
           X[i][j] = c;
-          sum[c][i + 1][j + 1] = 1;
-          if (C < c + 1) C = c + 1;
+          SUM[c][i + 1][j + 1] = 1;
+          CP[c][CP[c][0]++] = (i << 8) | j;
         }
       }
       for (int i = 0; i < H; ++i) {
         for (int j = 0; j < W; ++j) {
           for (int c = 0; c < C; ++c) {
-            sum[c][i + 1][j + 1] +=
-                sum[c][i][j + 1] + sum[c][i + 1][j] - sum[c][i][j];
+            SUM[c][i + 1][j + 1] +=
+                SUM[c][i][j + 1] + SUM[c][i + 1][j] - SUM[c][i][j];
           }
         }
       }
       bool ok = true;
       while (ok) {
         ok = false;
-        for (int p1 = 0; p1 < P; ++p1) {
-          int i = P1[p1] >> 8;
-          int j = P1[p1] & 0xff;
-          if (X[i][j] < 0) continue;
+        for (int p1_ = 0; p1_ < P; ++p1_) {
+          int p1 = P1[p1_];
+          int i = p1 >> 8;
+          int j = p1 & 0xff;
+          int c = X[i][j];
+          if (c < 0) continue;
           auto pair = [&]() {
-            for (int p2 = 0; p2 < P; ++p2) {
-              int a = P2[p2] >> 8;
-              int b = P2[p2] & 0xff;
-              if (X[a][b] < 0) continue;
-              if (i == a && j == b) continue;
-              if (X[i][j] != X[a][b]) continue;
+            for (int p2_ = 1; p2_ < CP[c][0]; ++p2_) {
+              int p2 = CP[c][p2_];
+              if (p1 == p2) continue;
+              int a = p2 >> 8;
+              int b = p2 & 0xff;
               auto check = [&]() {
                 int minh = min(i, a);
                 int maxh = max(i, a) + 1;
@@ -99,27 +103,34 @@ class SameColorPairs {
                 int maxw = max(j, b) + 1;
                 for (int c = 0; c < C; ++c) {
                   if (X[i][j] == c) continue;
-                  if ((sum[c][maxh][maxw] - sum[c][maxh][minw] -
-                       sum[c][minh][maxw] + sum[c][minh][minw]) > 0)
+                  if ((SUM[c][maxh][maxw] + SUM[c][minh][minw] -
+                       SUM[c][maxh][minw] - SUM[c][minh][maxw]) > 0)
                     return false;
                 }
                 return true;
               };
               if (check()) {
-                auto remove = [&](int i_, int j_) {
-                  int c = X[i_][j_];
+                auto remove = [&](int p) {
+                  for (int k = 1; k < CP[c][0]; ++k) {
+                    if (CP[c][k] == p) {
+                      CP[c][k] = CP[c][--CP[c][0]];
+                      break;
+                    }
+                  }
+                  int i_ = p >> 8;
+                  int j_ = p & 0xff;
                   X[i_][j_] = -1;
                   for (int h = i_ + 1; h <= H; ++h) {
                     for (int w = j_ + 1; w <= W; ++w) {
-                      sum[c][h][w]--;
+                      SUM[c][h][w]--;
                     }
                   }
                 };
-                remove(i, j);
-                remove(a, b);
+                remove(p1);
+                remove(p2);
                 ok = true;
-                RESULT1[R1][0] = P1[p1];
-                RESULT1[R1][1] = P2[p2];
+                RESULT1[R1][0] = p1;
+                RESULT1[R1][1] = p2;
                 ++R1;
                 return;
               }
