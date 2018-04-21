@@ -162,25 +162,24 @@ class SameColorPairs {
                    SUM[minh][maxw];
             ll m = ~(((1LL << bit) - 1LL) << (bit * c));
             if ((t & m) == 0) {
-              auto remove = [&](int p) {
-                for (int k = 1; k < CP[c][0]; ++k) {
-                  if (CP[c][k] == p) {
-                    CP[c][k] = CP[c][--CP[c][0]];
-                    break;
-                  }
+              CP[c][p2_] = CP[c][--CP[c][0]];
+              for (int k = 1; k < CP[c][0]; ++k) {
+                if (CP[c][k] == p1) {
+                  CP[c][k] = CP[c][--CP[c][0]];
+                  break;
                 }
-                int i_ = p >> 8;
-                int j_ = p & 0xff;
+              }
+              ll t = 1LL << (bit * c);
+              auto remove = [&](int i_, int j_) {
                 X[i_][j_] = -1;
-                ll t = 1LL << (bit * c);
                 for (int h = i_ + 1; h <= H; ++h) {
                   for (int w = j_ + 1; w <= W; ++w) {
                     SUM[h][w] -= t;
                   }
                 }
               };
-              remove(p1);
-              remove(p2);
+              remove(i, j);
+              remove(a, b);
               ok = true;
               RESULT1[R1][0] = p1;
               RESULT1[R1][1] = p2;
