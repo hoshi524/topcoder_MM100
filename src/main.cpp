@@ -103,10 +103,7 @@ class SameColorPairs {
         P = 0;
         for (int i = 0; i < H; ++i) {
           for (int j = 0; j < W; ++j) {
-            if (remain[i][j]) {
-              P1[P] = (i << 8) | j;
-              ++P;
-            }
+            if (remain[i][j]) P1[P++] = (i << 8) | j;
           }
         }
       }
@@ -154,55 +151,52 @@ class SameColorPairs {
           int j = p1 & 0xff;
           int c = X[i][j];
           if (c < 0) continue;
-          auto pair = [&]() {
-            for (int p2_ = 1; p2_ < CP[c][0]; ++p2_) {
-              int p2 = CP[c][p2_];
-              if (p1 == p2) continue;
-              int a = p2 >> 8;
-              int b = p2 & 0xff;
-              int minh, maxh, minw, maxw;
-              if (i < a) {
-                minh = i, maxh = a + 1;
-              } else {
-                minh = a, maxh = i + 1;
-              }
-              if (j < b) {
-                minw = j, maxw = b + 1;
-              } else {
-                minw = b, maxw = j + 1;
-              }
-              ll t = SUM[maxh][maxw] + SUM[minh][minw] - SUM[maxh][minw] -
-                     SUM[minh][maxw];
-              ll m = ~(((1LL << bit) - 1LL) << (bit * c));
-              if ((t & m) == 0) {
-                auto remove = [&](int p) {
-                  for (int k = 1; k < CP[c][0]; ++k) {
-                    if (CP[c][k] == p) {
-                      CP[c][k] = CP[c][--CP[c][0]];
-                      break;
-                    }
-                  }
-                  int i_ = p >> 8;
-                  int j_ = p & 0xff;
-                  X[i_][j_] = -1;
-                  ll t = 1LL << (bit * c);
-                  for (int h = i_ + 1; h <= H; ++h) {
-                    for (int w = j_ + 1; w <= W; ++w) {
-                      SUM[h][w] -= t;
-                    }
-                  }
-                };
-                remove(p1);
-                remove(p2);
-                ok = true;
-                RESULT1[R1][0] = p1;
-                RESULT1[R1][1] = p2;
-                ++R1;
-                return;
-              }
+          for (int p2_ = 1; p2_ < CP[c][0]; ++p2_) {
+            int p2 = CP[c][p2_];
+            if (p1 == p2) continue;
+            int a = p2 >> 8;
+            int b = p2 & 0xff;
+            int minh, maxh, minw, maxw;
+            if (i < a) {
+              minh = i, maxh = a + 1;
+            } else {
+              minh = a, maxh = i + 1;
             }
-          };
-          pair();
+            if (j < b) {
+              minw = j, maxw = b + 1;
+            } else {
+              minw = b, maxw = j + 1;
+            }
+            ll t = SUM[maxh][maxw] + SUM[minh][minw] - SUM[maxh][minw] -
+                   SUM[minh][maxw];
+            ll m = ~(((1LL << bit) - 1LL) << (bit * c));
+            if ((t & m) == 0) {
+              auto remove = [&](int p) {
+                for (int k = 1; k < CP[c][0]; ++k) {
+                  if (CP[c][k] == p) {
+                    CP[c][k] = CP[c][--CP[c][0]];
+                    break;
+                  }
+                }
+                int i_ = p >> 8;
+                int j_ = p & 0xff;
+                X[i_][j_] = -1;
+                ll t = 1LL << (bit * c);
+                for (int h = i_ + 1; h <= H; ++h) {
+                  for (int w = j_ + 1; w <= W; ++w) {
+                    SUM[h][w] -= t;
+                  }
+                }
+              };
+              remove(p1);
+              remove(p2);
+              ok = true;
+              RESULT1[R1][0] = p1;
+              RESULT1[R1][1] = p2;
+              ++R1;
+              break;
+            }
+          }
         }
       }
       auto backsize = [&]() {
