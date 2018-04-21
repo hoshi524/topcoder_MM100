@@ -121,7 +121,7 @@ class SameColorPairs {
         static int16 tmp[S * S];
         memcpy(tmp, P1, sizeof(int16) * P);
         for (int i = 0; i < P; ++i) {
-          int t = get_random() % min(14, P - i);
+          int t = get_random() % min(10, P - i);
           P1[i] = tmp[t];
           memcpy(tmp + t, tmp + t + 1, sizeof(int16) * (P - i - 1));
         }
