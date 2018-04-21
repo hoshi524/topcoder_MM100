@@ -91,9 +91,9 @@ class SameColorPairs {
       }
     }
     bit = 60 / C;
+    memset(SUM, 0, sizeof(SUM));
     for (int test = 0, back = 0; timer.getElapsed() < TIME_LIMIT; ++test) {
       memset(X, 0, sizeof(X));
-      memset(SUM, 0, sizeof(SUM));
       for (int i = 0; i < C; ++i) CP[i][0] = 1;
       for (int i = 0; i < R1; ++i) {
         auto off = [&](int p) { X[p >> 8][p & 0xff] = -1; };
@@ -103,15 +103,15 @@ class SameColorPairs {
       P = 0;
       for (int i = 0; i < H; ++i) {
         for (int j = 0; j < W; ++j) {
+          SUM[i + 1][j + 1] = SUM[i][j + 1] + SUM[i + 1][j] - SUM[i][j];
           if (X[i][j] == 0) {
             int t = (i << 8) | j;
             int c = board[i][j] - '0';
             P1[P++] = t;
             X[i][j] = c;
-            SUM[i + 1][j + 1] = 1LL << (bit * c);
+            SUM[i + 1][j + 1] += 1LL << (bit * c);
             CP[c][CP[c][0]++] = t;
           }
-          SUM[i + 1][j + 1] += SUM[i][j + 1] + SUM[i + 1][j] - SUM[i][j];
         }
       }
       sort(P1, P1 + P, [&](int a, int b) {
