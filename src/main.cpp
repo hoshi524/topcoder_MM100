@@ -2,6 +2,7 @@
 #include <sys/time.h>
 using namespace std;
 typedef long long ll;
+typedef int16_t int16;
 
 class Timer {
  public:
@@ -64,16 +65,16 @@ constexpr float TIME_LIMIT = 2.5;
 constexpr int MAX_C = 6;
 constexpr int S = 1 << 7;
 
-int_fast16_t X[S][S];
-int_fast16_t CP[MAX_C][S * S];
-int_fast16_t P1[S * S];
+int16 X[S][S];
+int16 CP[MAX_C][S * S];
+int16 P1[S * S];
 ll SUM[S][S];
 int H, W, C, P, B;
 int R1, R2, R3;
 int bit;
-int_fast16_t RESULT1[S * S / 2][2];
-int_fast16_t RESULT2[S * S / 2][2];
-int_fast16_t RESULT3[S * S / 2][2];
+int16 RESULT1[S * S / 2][2];
+int16 RESULT2[S * S / 2][2];
+int16 RESULT3[S * S / 2][2];
 
 class SameColorPairs {
  public:
@@ -119,13 +120,13 @@ class SameColorPairs {
         int vb = value(b);
         return test & 1 ? va > vb : va < vb;
       });
-      for (int i = 0; i < P; ++i) {
-        // int j = i + get_random() % min(10, P - i);
-        int j = i + get_random() % 10;
-        if (j < P) {
-          int t = P1[i];
-          P1[i] = P1[j];
-          P1[j] = t;
+      {
+        static int16 tmp[S * S];
+        memcpy(tmp, P1, sizeof(int16) * P);
+        for (int i = 0; i < P; ++i) {
+          int t = get_random() % min(14, P - i);
+          P1[i] = tmp[t];
+          memcpy(tmp + t, tmp + t + 1, sizeof(int16) * (P - i - 1));
         }
       }
       memset(SUM, 0, sizeof(SUM));
@@ -209,10 +210,8 @@ class SameColorPairs {
         return x * 20 < R2 ? 0 : x;
       };
       if (R2 < R1 || backsize() == 0) {
-        for (int i = backsize(); i < R1; ++i) {
-          RESULT2[i][0] = RESULT1[i][0];
-          RESULT2[i][1] = RESULT1[i][1];
-        }
+        int t = backsize();
+        memcpy(RESULT2 + t, RESULT1 + t, sizeof(int16) * 2 * (R1 - t));
         R2 = R1;
         back = 0;
       }
@@ -220,7 +219,7 @@ class SameColorPairs {
       R1 = backsize();
       if (R3 < R2) {
         R3 = R2;
-        memcpy(RESULT3, RESULT2, sizeof(RESULT2));
+        memcpy(RESULT3, RESULT2, sizeof(int16) * 2 * R3);
         if (R3 == B) break;
       }
     }
