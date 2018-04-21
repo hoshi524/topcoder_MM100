@@ -70,6 +70,7 @@ int_fast16_t P1[S * S];
 ll SUM[S][S];
 int H, W, C, P, B;
 int R1, R2;
+int bit;
 int_fast16_t RESULT1[S * S / 2][2];
 int_fast16_t RESULT2[S * S / 2][2];
 
@@ -80,55 +81,62 @@ class SameColorPairs {
     W = board[0].size();
     B = H * W / 2;
     C = 0;
+    R1 = 0, R2 = 0;
     for (int i = 0; i < H; ++i) {
       for (int j = 0; j < W; ++j) {
         int c = board[i][j] - '0' + 1;
         if (C < c) C = c;
       }
     }
-    int bit = 60 / C;
-    R2 = 0;
-    for (int test = 0; timer.getElapsed() < TIME_LIMIT; ++test) {
+    bit = 60 / C;
+    for (int test = 0, back = 0; timer.getElapsed() < TIME_LIMIT; ++test) {
       {
+        static bool remain[S][S];
+        memset(remain, true, sizeof(remain));
+        for (int i = 0; i < R1; ++i) {
+          auto off = [&](int p) { remain[p >> 8][p & 0xff] = false; };
+          off(RESULT2[i][0]);
+          off(RESULT2[i][1]);
+        }
         P = 0;
         for (int i = 0; i < H; ++i) {
           for (int j = 0; j < W; ++j) {
-            P1[P] = (i << 8) | j;
-            ++P;
+            if (remain[i][j]) {
+              P1[P] = (i << 8) | j;
+              ++P;
+            }
           }
         }
-        sort(P1, P1 + P, [&](int a, int b) {
-          auto value = [](int x) {
-            int i = x >> 8;
-            int j = x & 0xff;
-            return abs(H / 2 - i) + abs(W / 2 - j);
-          };
-          int va = value(a);
-          int vb = value(b);
-          return test & 1 ? va > vb : va < vb;
-        });
-        for (int i = 0; i < P; ++i) {
-          auto swap = [&](int_fast16_t* x) {
-            int j = i + get_random() % 10;
-            if (j < P) {
-              int t = x[i];
-              x[i] = x[j];
-              x[j] = t;
-            }
-          };
-          swap(P1);
+      }
+      sort(P1, P1 + P, [&](int a, int b) {
+        auto value = [](int x) {
+          int i = x >> 8;
+          int j = x & 0xff;
+          return abs(H / 2 - i) + abs(W / 2 - j);
+        };
+        int va = value(a);
+        int vb = value(b);
+        return test & 1 ? va > vb : va < vb;
+      });
+      for (int i = 0; i < P; ++i) {
+        // int j = i + get_random() % min(10, P - i);
+        int j = i + get_random() % 10;
+        if (j < P) {
+          int t = P1[i];
+          P1[i] = P1[j];
+          P1[j] = t;
         }
       }
-      R1 = 0;
       memset(SUM, 0, sizeof(SUM));
+      memset(X, -1, sizeof(X));
       for (int i = 0; i < C; ++i) CP[i][0] = 1;
-      for (int i = 0; i < H; ++i) {
-        for (int j = 0; j < W; ++j) {
-          int c = board[i][j] - '0';
-          X[i][j] = c;
-          SUM[i + 1][j + 1] = 1LL << (bit * c);
-          CP[c][CP[c][0]++] = (i << 8) | j;
-        }
+      for (int p = 0; p < P; ++p) {
+        int i = P1[p] >> 8;
+        int j = P1[p] & 0xff;
+        int c = board[i][j] - '0';
+        X[i][j] = c;
+        SUM[i + 1][j + 1] = 1LL << (bit * c);
+        CP[c][CP[c][0]++] = (i << 8) | j;
       }
       for (int i = 0; i < H; ++i) {
         for (int j = 0; j < W; ++j) {
@@ -195,11 +203,18 @@ class SameColorPairs {
           pair();
         }
       }
+      auto backsize = [&]() { return max(0, R2 - back); };
       if (R2 < R1) {
+        for (int i = backsize(); i < R1; ++i) {
+          RESULT2[i][0] = RESULT1[i][0];
+          RESULT2[i][1] = RESULT1[i][1];
+        }
         R2 = R1;
-        memcpy(RESULT2, RESULT1, sizeof(RESULT1));
         if (R2 == B) break;
+        back = 0;
       }
+      if (test & 1) ++back;
+      R1 = backsize();
     }
     vector<string> ret;
     for (int i = 0; i < R2; ++i) {
