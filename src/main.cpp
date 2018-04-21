@@ -92,19 +92,26 @@ class SameColorPairs {
     }
     bit = 60 / C;
     for (int test = 0, back = 0; timer.getElapsed() < TIME_LIMIT; ++test) {
-      {
-        static bool remain[S][S];
-        memset(remain, true, sizeof(remain));
-        for (int i = 0; i < R1; ++i) {
-          auto off = [&](int p) { remain[p >> 8][p & 0xff] = false; };
-          off(RESULT2[i][0]);
-          off(RESULT2[i][1]);
-        }
-        P = 0;
-        for (int i = 0; i < H; ++i) {
-          for (int j = 0; j < W; ++j) {
-            if (remain[i][j]) P1[P++] = (i << 8) | j;
+      memset(X, 0, sizeof(X));
+      memset(SUM, 0, sizeof(SUM));
+      for (int i = 0; i < C; ++i) CP[i][0] = 1;
+      for (int i = 0; i < R1; ++i) {
+        auto off = [&](int p) { X[p >> 8][p & 0xff] = -1; };
+        off(RESULT2[i][0]);
+        off(RESULT2[i][1]);
+      }
+      P = 0;
+      for (int i = 0; i < H; ++i) {
+        for (int j = 0; j < W; ++j) {
+          if (X[i][j] == 0) {
+            int t = (i << 8) | j;
+            int c = board[i][j] - '0';
+            P1[P++] = t;
+            X[i][j] = c;
+            SUM[i + 1][j + 1] = 1LL << (bit * c);
+            CP[c][CP[c][0]++] = t;
           }
+          SUM[i + 1][j + 1] += SUM[i][j + 1] + SUM[i + 1][j] - SUM[i][j];
         }
       }
       sort(P1, P1 + P, [&](int a, int b) {
@@ -124,22 +131,6 @@ class SameColorPairs {
           int t = get_random() % min(10, P - i);
           P1[i] = tmp[t];
           memcpy(tmp + t, tmp + t + 1, sizeof(int16) * (P - i - 1));
-        }
-      }
-      memset(SUM, 0, sizeof(SUM));
-      memset(X, -1, sizeof(X));
-      for (int i = 0; i < C; ++i) CP[i][0] = 1;
-      for (int p = 0; p < P; ++p) {
-        int i = P1[p] >> 8;
-        int j = P1[p] & 0xff;
-        int c = board[i][j] - '0';
-        X[i][j] = c;
-        SUM[i + 1][j + 1] = 1LL << (bit * c);
-        CP[c][CP[c][0]++] = (i << 8) | j;
-      }
-      for (int i = 0; i < H; ++i) {
-        for (int j = 0; j < W; ++j) {
-          SUM[i + 1][j + 1] += SUM[i][j + 1] + SUM[i + 1][j] - SUM[i][j];
         }
       }
       bool ok = true;
