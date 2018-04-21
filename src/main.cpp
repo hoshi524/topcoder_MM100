@@ -69,10 +69,11 @@ int_fast16_t CP[MAX_C][S * S];
 int_fast16_t P1[S * S];
 ll SUM[S][S];
 int H, W, C, P, B;
-int R1, R2;
+int R1, R2, R3;
 int bit;
 int_fast16_t RESULT1[S * S / 2][2];
 int_fast16_t RESULT2[S * S / 2][2];
+int_fast16_t RESULT3[S * S / 2][2];
 
 class SameColorPairs {
  public:
@@ -81,7 +82,7 @@ class SameColorPairs {
     W = board[0].size();
     B = H * W / 2;
     C = 0;
-    R1 = 0, R2 = 0;
+    R1 = 0, R2 = 0, R3 = 0;
     for (int i = 0; i < H; ++i) {
       for (int j = 0; j < W; ++j) {
         int c = board[i][j] - '0' + 1;
@@ -203,25 +204,32 @@ class SameColorPairs {
           pair();
         }
       }
-      auto backsize = [&]() { return max(0, R2 - back); };
-      if (R2 < R1) {
+      auto backsize = [&]() {
+        int x = R2 - back;
+        return x * 20 < R2 ? 0 : x;
+      };
+      if (R2 < R1 || backsize() == 0) {
         for (int i = backsize(); i < R1; ++i) {
           RESULT2[i][0] = RESULT1[i][0];
           RESULT2[i][1] = RESULT1[i][1];
         }
         R2 = R1;
-        if (R2 == B) break;
         back = 0;
       }
-      if (test & 1) ++back;
+      back += 2;
       R1 = backsize();
+      if (R3 < R2) {
+        R3 = R2;
+        memcpy(RESULT3, RESULT2, sizeof(RESULT2));
+        if (R3 == B) break;
+      }
     }
     vector<string> ret;
-    for (int i = 0; i < R2; ++i) {
-      int a = RESULT2[i][0] >> 8;
-      int b = RESULT2[i][0] & 0xff;
-      int c = RESULT2[i][1] >> 8;
-      int d = RESULT2[i][1] & 0xff;
+    for (int i = 0; i < R3; ++i) {
+      int a = RESULT3[i][0] >> 8;
+      int b = RESULT3[i][0] & 0xff;
+      int c = RESULT3[i][1] >> 8;
+      int d = RESULT3[i][1] & 0xff;
       ret.push_back(to_string(a) + " " + to_string(b) + " " + to_string(c) +
                     " " + to_string(d));
     }
