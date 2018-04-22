@@ -197,7 +197,7 @@ class SameColorPairs {
         int t = backsize();
         memcpy(RESULT2 + t, RESULT1 + t, sizeof(int16) * 2 * (R1 - t));
         R2 = R1;
-        back = 3;
+        back = 4;
       }
       back += 2;
       R1 = backsize();
