@@ -191,7 +191,7 @@ class SameColorPairs {
       }
       auto backsize = [&]() {
         int x = R2 - back;
-        return x * 20 < R2 ? 0 : x;
+        return x * 10 < R2 * 7 ? 0 : x;
       };
       if (R2 < R1 || backsize() == 0) {
         int t = backsize();
