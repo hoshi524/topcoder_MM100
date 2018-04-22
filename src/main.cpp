@@ -114,16 +114,20 @@ class SameColorPairs {
           }
         }
       }
-      sort(P1, P1 + P, [&](int a, int b) {
-        auto value = [](int x) {
-          int i = x >> 8;
-          int j = x & 0xff;
-          return abs(H / 2 - i) + abs(W / 2 - j);
-        };
-        int va = value(a);
-        int vb = value(b);
-        return test & 1 ? va > vb : va < vb;
-      });
+      {
+        int th = get_random() % H;
+        int tw = get_random() % W;
+        sort(P1, P1 + P, [&](int a, int b) {
+          auto value = [&](int x) {
+            int i = x >> 8;
+            int j = x & 0xff;
+            return abs(th - i) + abs(tw - j);
+          };
+          int va = value(a);
+          int vb = value(b);
+          return test & 1 ? va > vb : va < vb;
+        });
+      }
       {
         static int16 tmp[S * S];
         memcpy(tmp, P1, sizeof(int16) * P);
