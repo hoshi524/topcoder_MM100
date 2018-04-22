@@ -193,10 +193,7 @@ class SameColorPairs {
           }
         }
       }
-      auto backsize = [&]() {
-        int x = R2 - back;
-        return x * 10 < R2 * 7 ? 0 : x;
-      };
+      auto backsize = [&]() { return back > min(200, R2) ? 0 : R2 - back; };
       if (R2 < R1 || backsize() == 0) {
         int t = backsize();
         memcpy(RESULT2 + t, RESULT1 + t, sizeof(int16) * 2 * (R1 - t));
