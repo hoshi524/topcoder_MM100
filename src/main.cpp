@@ -145,7 +145,6 @@ class SameColorPairs {
           int i = p1 >> 8;
           int j = p1 & 0xff;
           int c = X[i][j];
-          if (c < 0) continue;
           for (int p2_ = 1; p2_ < CP[c][0]; ++p2_) {
             int p2 = CP[c][p2_];
             if (p1 == p2) continue;
@@ -166,6 +165,13 @@ class SameColorPairs {
                    SUM[minh][maxw];
             ll m = ~(((1LL << bit) - 1LL) << (bit * c));
             if ((t & m) == 0) {
+              P1[p1_] = P1[--P];
+              for (int k = 0; k < P; ++k) {
+                if (P1[k] == p2) {
+                  P1[k] = P1[--P];
+                  break;
+                }
+              }
               CP[c][p2_] = CP[c][--CP[c][0]];
               for (int k = 1; k < CP[c][0]; ++k) {
                 if (CP[c][k] == p1) {
@@ -175,7 +181,6 @@ class SameColorPairs {
               }
               ll t = 1LL << (bit * c);
               auto remove = [&](int i_, int j_) {
-                X[i_][j_] = -1;
                 for (int h = i_ + 1; h <= H; ++h) {
                   for (int w = j_ + 1; w <= W; ++w) {
                     SUM[h][w] -= t;
