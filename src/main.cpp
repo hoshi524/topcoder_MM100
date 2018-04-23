@@ -134,7 +134,7 @@ class SameColorPairs {
         for (int i = 0; i < P; ++i) {
           int t = get_random() % min(10, P - i);
           P1[i] = tmp[t];
-          memcpy(tmp + t, tmp + t + 1, sizeof(int16) * (P - i - 1));
+          tmp[t] = i + 10 < P ? tmp[i + 10] : tmp[P - i - 1];
         }
       }
       bool ok = true;
