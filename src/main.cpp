@@ -198,15 +198,15 @@ class SameColorPairs {
         int t = backsize();
         memcpy(RESULT2 + t, RESULT1 + t, sizeof(int16) * 2 * (R1 - t));
         R2 = R1;
+        if (R3 < R2) {
+          R3 = R2;
+          memcpy(RESULT3, RESULT2, sizeof(int16) * 2 * R3);
+          if (R3 == B) break;
+        }
         back = 4;
       }
       back += 2;
       R1 = backsize();
-      if (R3 < R2) {
-        R3 = R2;
-        memcpy(RESULT3, RESULT2, sizeof(int16) * 2 * R3);
-        if (R3 == B) break;
-      }
     }
     vector<string> ret;
     for (int i = 0; i < R3; ++i) {
