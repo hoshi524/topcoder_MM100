@@ -198,7 +198,15 @@ class SameColorPairs {
           }
         }
       }
-      auto backsize = [&]() { return back > min(200, R2) ? 0 : R2 - back; };
+      auto backsize = [&]() {
+        if (back > 100) return 0;
+        int t = -40;
+        int l = t * t * t;
+        t += back;
+        int u = t * t * t;
+        t = R2 - (u - l) / 2000;
+        return t > 0 ? t : 0;
+      };
       if (R2 < R1 || backsize() == 0) {
         int t = backsize();
         memcpy(RESULT2 + t, RESULT1 + t, sizeof(int16) * 2 * (R1 - t));
@@ -208,9 +216,9 @@ class SameColorPairs {
           memcpy(RESULT3, RESULT2, sizeof(int16) * 2 * R3);
           if (R3 == B) break;
         }
-        back = 4;
+        back = 0;
       }
-      back += 2;
+      back++;
       R1 = backsize();
     }
     vector<string> ret;
